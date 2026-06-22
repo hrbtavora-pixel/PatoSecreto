@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#ece2cc">
+<title>Pato Secreto — Um Infiltrado no Governo</title>
+
+<!-- PWA: instalável pelo Chrome (Adicionar à tela inicial) e offline.
+     Caminhos relativos para funcionar em subpasta (GitHub Pages). -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Pato Secreto">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+
+<!--
+  ============================================================================
+  FONTES (typewriter / documento datilografado)
+  Para PWA 100% offline, baixe e auto-hospede estas fontes e troque o <link>.
+  ============================================================================
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Special+Elite&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================================================
+   TOKENS DE TEMA  —  altere aqui para re-tematizar o jogo inteiro
+   Paleta: pastel "documento de arquivo da 2ª Guerra"
+   =========================================================================== */
+:root{
+  --paper:      #ece2cc;  /* papel envelhecido (fundo)        */
+  --paper-2:    #e2d6ba;  /* pasta manila / cartão            */
+  --paper-3:    #d8caa8;  /* sombra de dobra                  */
+  --ink:        #2e2a22;  /* tinta de máquina (texto)         */
+  --ink-soft:   #6f6453;  /* tinta apagada                    */
+  --line:       #c2b496;  /* linhas de pauta / bordas         */
+  --liberal:    #7d9fa6;  /* azul-arquivo apagado             */
+  --liberal-bg: #d3dfde;
+  --fascist:    #b6826b;  /* terracota / tijolo desbotado     */
+  --fascist-bg: #e6d2c4;
+  --stamp:      #9a4b3e;  /* vermelho de carimbo (uso raro)   */
+  --ok:         #5f7d5a;  /* verde-oliva apagado (Ja)         */
+  --no:         #9a4b3e;  /* vermelho (Nein)                  */
+  --radius:     2px;      /* documentos não têm cantos redondos */
+  --shadow:     0 1px 0 var(--paper-3), 0 10px 24px rgba(46,42,34,.12);
+  --font-disp:  "Special Elite", "Courier New", monospace;
+  --font-body:  "Courier Prime", "Courier New", monospace;
+}
+
+/* ---------- base ---------- */
+*{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ margin:0; padding:0; height:100%; }
+body{
+  background:var(--paper);
+  /* textura sutil de papel */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(0,0,0,.012) 0 2px, transparent 2px 4px),
+    radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.35), transparent 60%);
+  color:var(--ink);
+  font-family:var(--font-body);
+  font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+}
+.app{ max-width:520px; margin:0 auto; min-height:100%; padding:18px 16px 40px;
+  display:flex; flex-direction:column; }
+
+/* ---------- tipografia / utilitários de documento ---------- */
+h1,h2,h3{ font-family:var(--font-disp); font-weight:400; letter-spacing:.5px; margin:0; }
+.eyebrow{ font-family:var(--font-disp); font-size:.72rem; letter-spacing:3px;
+  text-transform:uppercase; color:var(--ink-soft); }
+.rule{ height:0; border:0; border-top:1.5px solid var(--ink); margin:10px 0; }
+.rule.dotted{ border-top:1.5px dashed var(--line); }
+.muted{ color:var(--ink-soft); }
+.center{ text-align:center; }
+.small{ font-size:.82rem; }
+
+/* carimbo rotacionado (elemento de assinatura) */
+.stamp{
+  display:inline-block; font-family:var(--font-disp); letter-spacing:2px;
+  text-transform:uppercase; color:var(--stamp);
+  border:2.5px solid var(--stamp); padding:3px 10px; border-radius:3px;
+  transform:rotate(-6deg); opacity:.85; font-size:.8rem;
+}
+
+/* ---------- "papel" / cartão de documento ---------- */
+.doc{
+  background:var(--paper-2);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  padding:18px 16px; margin:12px 0;
+  position:relative;
+}
+.doc::before{ /* canto de pasta dobrado */
+  content:""; position:absolute; top:0; right:0; width:0; height:0;
+  border-style:solid; border-width:0 16px 16px 0;
+  border-color:transparent var(--paper) transparent transparent;
+}
+.header{ text-align:center; padding-top:6px; }
+.header .title{ font-size:1.5rem; line-height:1.15; }
+.header .sub{ margin-top:4px; }
+
+/* ---------- botões ---------- */
+button{ font-family:var(--font-body); font-size:1rem; cursor:pointer; }
+.btn{
+  display:block; width:100%; padding:13px 14px; margin:8px 0;
+  background:var(--paper); color:var(--ink);
+  border:1.5px solid var(--ink); border-radius:var(--radius);
+  font-weight:700; letter-spacing:.5px; transition:transform .05s, background .15s;
+}
+.btn:active{ transform:translateY(1px); }
+.btn:disabled{ opacity:.4; cursor:not-allowed; }
+.btn.primary{ background:var(--ink); color:var(--paper); }
+.btn.ghost{ background:transparent; border-style:dashed; font-weight:400; }
+.btn.lib{ border-color:var(--liberal); }
+.btn.fas{ border-color:var(--fascist); }
+.btn-row{ display:flex; gap:8px; }
+.btn-row .btn{ margin:8px 0; }
+
+/* ---------- inputs ---------- */
+.field{ display:flex; gap:8px; margin:10px 0; }
+input[type=text]{
+  flex:1; font-family:var(--font-body); font-size:1rem; padding:11px 12px;
+  background:var(--paper); border:1.5px solid var(--line); border-radius:var(--radius);
+  color:var(--ink);
+}
+input[type=text]:focus{ outline:2px solid var(--ink); }
+
+/* ---------- lista de jogadores ---------- */
+.players{ list-style:none; margin:6px 0; padding:0; }
+.players li{
+  display:flex; align-items:center; gap:10px; padding:8px 10px;
+  border-bottom:1px dashed var(--line); font-size:1rem;
+}
+.players li .num{ font-family:var(--font-disp); color:var(--ink-soft); width:1.6em; }
+.players li .x{ margin-left:auto; border:none; background:none; color:var(--stamp);
+  font-size:1.1rem; padding:4px 8px; }
+
+/* ===========================================================================
+   PLACEHOLDERS DE ARTE  —  troque o conteúdo por <img> quando tiver suas artes.
+   Cada slot tem data-art="..." para você localizar rápido no código.
+   =========================================================================== */
+.art-slot{
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  background:
+    repeating-linear-gradient(45deg, rgba(110,100,80,.06) 0 8px, transparent 8px 16px);
+  border:2px dashed var(--line); border-radius:var(--radius);
+  color:var(--ink-soft); font-family:var(--font-disp); font-size:.72rem;
+  letter-spacing:1.5px; text-transform:uppercase; padding:8px;
+}
+.art-slot .hint{ opacity:.7; }
+.art-banner{ width:100%; aspect-ratio:5/2; margin:6px 0 12px; }
+.art-card{ width:100%; aspect-ratio:3/4; }
+.art-icon{ width:46px; height:46px; font-size:.6rem; flex:0 0 auto; }
+/* imagem de arte (quando o arquivo existe em /art) */
+.art-img{ width:100%; height:100%; object-fit:cover; display:block; }
+.art-banner .art-img{ object-fit:contain; }          /* logo não corta */
+.art-slot.has-art{ border:none; background:none; padding:0; }
+.art-slot.has-art .hint{ display:none; }
+
+/* ---------- TRILHAS (boards) ---------- */
+.tracks{ margin:8px 0; }
+.track{ margin:10px 0; }
+.track .label{ display:flex; justify-content:space-between; align-items:baseline;
+  font-family:var(--font-disp); font-size:.74rem; letter-spacing:2px;
+  text-transform:uppercase; margin-bottom:5px; }
+.slots{ display:flex; gap:5px; }
+.slot{
+  flex:1; aspect-ratio:3/4; border:1.5px solid var(--line); border-radius:var(--radius);
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--font-disp); font-size:.6rem; color:var(--line);
+  position:relative; background:var(--paper);
+}
+.slot.filled.lib{ background:var(--liberal-bg); border-color:var(--liberal); color:var(--liberal); }
+.slot.filled.fas{ background:var(--fascist-bg); border-color:var(--fascist); color:var(--fascist); }
+.slot .pw{ position:absolute; bottom:-16px; font-size:.5rem; color:var(--ink-soft);
+  white-space:nowrap; letter-spacing:0; }
+.track.fas .slots{ margin-bottom:18px; } /* espaço p/ rótulos de poder */
+
+/* trilha de eleição (3 caixas) */
+.election{ display:flex; align-items:center; gap:8px; margin:14px 0 4px; }
+.election .dots{ display:flex; gap:6px; }
+.election .dot{ width:16px; height:16px; border:1.5px solid var(--ink-soft);
+  border-radius:50%; }
+.election .dot.on{ background:var(--stamp); border-color:var(--stamp); }
+
+/* ---------- painel de fase ---------- */
+.phase{ }
+.gov{ display:flex; gap:8px; margin:8px 0; }
+.gov .role-box{ flex:1; border:1px solid var(--line); border-radius:var(--radius);
+  padding:8px 10px; background:var(--paper); }
+.gov .role-box .k{ font-family:var(--font-disp); font-size:.66rem; letter-spacing:2px;
+  text-transform:uppercase; color:var(--ink-soft); }
+.gov .role-box .v{ font-size:1.05rem; }
+
+/* grade de jogadores (escolhas) */
+.pick{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0; }
+.pick .btn{ margin:0; }
+.pick .btn.dead{ opacity:.35; text-decoration:line-through; }
+
+/* votos públicos */
+.tally{ display:flex; flex-wrap:wrap; gap:6px; margin:10px 0; }
+.tally .v{ font-size:.8rem; padding:4px 8px; border:1px solid var(--line);
+  border-radius:var(--radius); }
+.tally .v.ja{ border-color:var(--ok); color:var(--ok); }
+.tally .v.nein{ border-color:var(--no); color:var(--no); }
+
+/* ---------- cartas de política em mão (largas, p/ leitura de texto) ---------- */
+.hand{ display:flex; flex-direction:column; gap:12px; margin:14px 0; }
+.poly{
+  width:100%; border-radius:var(--radius); overflow:hidden;
+  border:2px solid var(--line); display:flex; flex-direction:column;
+  background:var(--paper); transition:transform .06s; text-align:left;
+}
+.poly .ptag{
+  font-family:var(--font-disp); font-size:.82rem; letter-spacing:2px;
+  text-transform:uppercase; padding:9px 12px; border-bottom:1.5px solid var(--line);
+  display:flex; justify-content:space-between; align-items:center; gap:8px;
+}
+.poly .ptag .hintsel{ font-family:var(--font-body); font-size:.66rem; letter-spacing:.5px;
+  text-transform:none; color:var(--ink-soft); }
+/* .pbody é a ÁREA DE LEITURA da pauta */
+.poly .pbody{ padding:14px 16px; min-height:120px; display:flex; align-items:center; }
+.poly .pbody .art-slot{ width:100%; min-height:96px; }
+.poly .ptext{ margin:0; font-size:.96rem; line-height:1.45; }
+.poly[data-type=liberal] .ptext::first-line{ }
+.poly[data-type=liberal]{ border-color:var(--liberal); }
+.poly[data-type=liberal] .ptag{ color:var(--liberal); border-color:var(--liberal); }
+.poly[data-type=fascist]{ border-color:var(--fascist); }
+.poly[data-type=fascist] .ptag{ color:var(--fascist); border-color:var(--fascist); }
+.poly.sel{ cursor:pointer; }
+.poly.sel:active{ transform:scale(.99); }
+.poly.chosen{ outline:3px solid var(--stamp); }
+
+/* ---------- HANDOFF (tela de passar o aparelho) ---------- */
+.handoff{
+  position:fixed; inset:0; z-index:50; background:var(--paper);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:30px; gap:14px;
+}
+.handoff .to{ font-family:var(--font-disp); font-size:1.8rem; line-height:1.2; }
+.handoff .seal{ width:120px; height:120px; border:3px double var(--stamp);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  color:var(--stamp); font-family:var(--font-disp); letter-spacing:2px; transform:rotate(-4deg); }
+
+/* ---------- reveal final / fim de jogo ---------- */
+.gameover{ text-align:center; }
+.gameover .winner{ font-size:1.8rem; margin:6px 0; }
+.win-lib{ color:var(--liberal); }
+.win-fas{ color:var(--fascist); }
+
+/* utilidade de exibição de telas */
+.screen{ display:none; flex:1; }
+.screen.active{ display:flex; flex-direction:column; }
+[hidden]{ display:none !important; }
+
+/* ---------- botão "voltar ao início" (canto superior direito) ---------- */
+#homeBtn{
+  position:fixed; z-index:60;
+  top:max(10px, env(safe-area-inset-top));
+  right:max(12px, calc(50vw - 260px + 12px));
+  font-family:var(--font-disp); font-size:.7rem; letter-spacing:1.5px;
+  text-transform:uppercase; color:var(--ink);
+  background:var(--paper); border:1.5px solid var(--ink); border-radius:var(--radius);
+  padding:7px 11px; box-shadow:var(--shadow); cursor:pointer;
+}
+#homeBtn:active{ transform:translateY(1px); }
+
+/* ---------- tela inicial ---------- */
+.home-actions{ margin-top:6px; }
+#homeStatus{ font-size:.82rem; color:var(--ink-soft); text-align:center;
+  border:1px dashed var(--line); border-radius:var(--radius); padding:8px; margin:0 0 12px; }
+.home-credit{ text-align:center; margin-top:auto; padding-top:20px; }
+
+/* ---------- guia de instruções ---------- */
+.guide h3{ font-family:var(--font-disp); font-size:1rem; letter-spacing:1px;
+  margin:16px 0 4px; color:var(--ink); }
+.guide p{ margin:6px 0; }
+.guide ul{ margin:6px 0; padding-left:18px; }
+.guide li{ margin:4px 0; }
+.guide .seq{ list-style:none; padding-left:0; counter-reset:step; margin:6px 0; }
+.guide .seq>li{ position:relative; padding-left:32px; margin:12px 0; }
+.guide .seq>li::before{ counter-increment:step;
+  content:counter(step,decimal-leading-zero);
+  position:absolute; left:0; top:1px;
+  font-family:var(--font-disp); color:var(--stamp); font-size:.9rem; }
+.guide .seq>li b{ display:block; }
+
+@media (prefers-reduced-motion: reduce){ *{ transition:none !important; } }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- botão fixo: voltar ao início -->
+  <button id="homeBtn" hidden>↖ Início</button>
+
+  <!-- ===================================================================
+       TELA 0 — PÁGINA INICIAL
+       =================================================================== -->
+  <section id="screen-home" class="screen active">
+    <div class="header" style="margin-top:30px;">
+      <!-- ARTE: logotipo/identidade do jogo -->
+      <div class="art-slot art-banner" data-art="logo">
+        <img class="art-img" src="art/logo.png" alt="Pato Secreto"
+             onload="this.closest('.art-slot').classList.add('has-art')" onerror="this.remove()">
+        <span class="hint">ARTE · LOGOTIPO<br>(banner 5:2)</span>
+      </div>
+      <h1 class="title">Pato Secreto</h1>
+      <p class="sub muted small">Há um pato infiltrado no poder? · um aparelho, a roda toda</p>
+    </div>
+
+    <div class="doc home-actions">
+      <p id="homeStatus" hidden></p>
+      <button class="btn primary" id="homeNew">Novo jogo</button>
+      <button class="btn" id="continueBtn" disabled>Continuar jogo</button>
+      <button class="btn ghost" id="homeInstr">Instruções</button>
+    </div>
+
+    <div class="home-credit">
+      <span class="stamp">Confidencial</span>
+    </div>
+  </section>
+
+  <!-- ===================================================================
+       TELA 1 — SETUP / NOMES
+       =================================================================== -->
+  <section id="screen-setup" class="screen">
+    <div class="header">
+      <!-- ARTE: logotipo/identidade do jogo (substitua o slot abaixo) -->
+      <div class="art-slot art-banner" data-art="logo">
+        <img class="art-img" src="art/logo.png" alt="Pato Secreto"
+             onload="this.closest('.art-slot').classList.add('has-art')" onerror="this.remove()">
+        <span class="hint">ARTE · LOGOTIPO<br>(banner 5:2)</span>
+      </div>
+      <h1 class="title">Pato Secreto</h1>
+      <p class="sub muted small">Há um pato infiltrado no poder? · um aparelho, a roda toda</p>
+    </div>
+
+    <div class="doc">
+      <span class="eyebrow">Convocação · registre os agentes</span>
+      <hr class="rule">
+      <div class="field">
+        <input id="nameInput" type="text" placeholder="Nome do jogador" maxlength="18" autocomplete="off">
+        <button class="btn primary" id="addBtn" style="width:auto; margin:0;">Incluir</button>
+      </div>
+      <ol class="players" id="playerList"></ol>
+      <p class="small muted" id="setupHint">Mínimo 5, máximo 10 jogadores.</p>
+    </div>
+
+    <button class="btn primary" id="startBtn" disabled>Selar dossiês &amp; iniciar</button>
+  </section>
+
+  <!-- ===================================================================
+       TELA 2 — DISTRIBUIÇÃO SECRETA DE PAPÉIS (passa-aparelho)
+       =================================================================== -->
+  <section id="screen-roles" class="screen">
+    <div class="header">
+      <h2 class="title">Distribuição de papéis</h2>
+      <p class="sub muted small">Cada agente vê seu dossiê em sigilo e repassa.</p>
+    </div>
+    <div class="doc" id="roleStage"></div>
+  </section>
+
+  <!-- ===================================================================
+       TELA 3 — JOGO
+       =================================================================== -->
+  <section id="screen-game" class="screen">
+
+    <!-- BOARD persistente -->
+    <div class="doc tracks" id="board">
+      <div class="track lib">
+        <div class="label"><span>Pauta Humana</span><span id="libCount">0/5</span></div>
+        <div class="slots" id="libTrack"></div>
+      </div>
+      <div class="track fas">
+        <div class="label"><span>Pauta Patista</span><span id="fasCount">0/6</span></div>
+        <div class="slots" id="fasTrack"></div>
+      </div>
+      <div class="election">
+        <span class="eyebrow">Eleição</span>
+        <div class="dots" id="electionDots"></div>
+        <span class="small muted" id="deckInfo"></span>
+      </div>
+    </div>
+
+    <!-- painel dinâmico de fase -->
+    <div class="doc phase" id="phaseArea"></div>
+  </section>
+
+  <!-- ===================================================================
+       TELA 4 — INSTRUÇÕES (resumo das regras)
+       =================================================================== -->
+  <section id="screen-instructions" class="screen">
+    <div class="header">
+      <h2 class="title">Instruções</h2>
+      <p class="sub muted small">Resumo de mesa · regras essenciais</p>
+    </div>
+
+    <div class="doc guide">
+      <h3>A situação</h3>
+      <p>Há um pato infiltrado no governo — e ele quer chegar à presidência. Dois lados
+      secretos disputam o poder: os <b>Humanos</b>, que são maioria, e os <b>Patistas</b>,
+      a minoria que conspira para abrir caminho ao <b>Pato Secreto</b>, escondido entre eles.
+      Você só conhece o próprio papel; o resto é dedução, blefe e confiança.</p>
+
+      <h3>Quem vence</h3>
+      <ul>
+        <li><b>Humanos:</b> aprovar 5 pautas humanas <i>ou</i> desmascarar e executar o Pato Secreto.</li>
+        <li><b>Patistas:</b> aprovar 6 pautas patistas <i>ou</i> eleger o Pato Secreto como
+        Chanceler depois que a 3ª pauta patista já estiver em vigor.</li>
+      </ul>
+
+      <h3>Os papéis</h3>
+      <ul>
+        <li><b>Humanos</b> não sabem quem é quem.</li>
+        <li><b>Patistas</b> se reconhecem e sabem quem é o Pato Secreto.</li>
+        <li><b>Pato Secreto</b> joga pelos patistas. Em mesas de 5–6 conhece seu agente;
+        de 7–10 não conhece o bando e precisa conquistar a confiança dos humanos.</li>
+      </ul>
+
+      <h3>A rodada</h3>
+      <ol class="seq">
+        <li><b>Eleição.</b> A presidência passa no sentido horário. O Presidente indica
+        um Chanceler elegível (o último Presidente e o último Chanceler eleitos não podem
+        ser Chanceler; com apenas 5 vivos, só o último Chanceler fica impedido). Todos
+        votam <i>Sim</i> ou <i>Não</i>. Maioria de sim forma o governo; empate ou maioria
+        de não rejeita e avança a trilha de eleição. <i>Três rejeições seguidas</i> jogam
+        o país no caos: aprova-se a carta do topo, sem poder, e os mandatos são esquecidos.</li>
+        <li><b>Sessão legislativa.</b> O Presidente saca 3 pautas, descarta 1 em sigilo e
+        passa 2 ao Chanceler, que descarta 1 e aprova a outra. Nenhuma comunicação entre
+        os dois é permitida, e os descartes nunca são revelados — todos podem mentir sobre
+        o que viram.</li>
+        <li><b>Ação executiva.</b> Algumas pautas patistas concedem ao Presidente um poder
+        de uso único: investigar a filiação de alguém, convocar eleição especial, espiar as
+        3 próximas cartas ou executar um jogador. Após a 5ª pauta patista surge o <b>veto</b>:
+        Presidente e Chanceler podem, juntos, descartar a pauta inteira.</li>
+      </ol>
+
+      <h3>A única regra de sinceridade</h3>
+      <p>Pode-se mentir sobre tudo que é secreto. A exceção: quem é o Pato Secreto
+      <b>deve</b> se revelar se for executado ou se for eleito Chanceler em condição de
+      vitória patista.</p>
+
+      <h3>Dicas rápidas</h3>
+      <ul>
+        <li>Todo mundo afirma ser humano — não há vantagem em se expor.</li>
+        <li>Humanos ganham desacelerando e investigando; patistas, na pressa e na confusão.</li>
+        <li>Os patistas costumam vencer <i>elegendo o Pato Secreto</i>, não acumulando pautas.</li>
+        <li>Quando sai uma pauta patista, só há três culpados: o Presidente, o Chanceler
+        ou o próprio baralho.</li>
+      </ul>
+
+      <hr class="rule dotted">
+      <p class="small muted center">Reskin temático de <i>Secret Hitler</i>
+      (Boxleiter, Maranges &amp; Schubert) — CC BY-NC-SA 4.0.</p>
+      <button class="btn primary" id="instrBack">Voltar ao início</button>
+    </div>
+  </section>
+
+  <!-- overlay de handoff (passar aparelho) -->
+  <div class="handoff" id="handoff" hidden>
+    <div class="seal" id="handoffSeal">SIGILO</div>
+    <div class="to" id="handoffTo">Passe o aparelho</div>
+    <p class="muted small" id="handoffNote"></p>
+    <button class="btn primary" id="handoffBtn" style="max-width:280px;">Revelar</button>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+/* ===========================================================================
+   ESTADO DO JOGO
+   =========================================================================== */
+const G = {
+  players: [],          // {name, role:'liberal'|'fascist'|'hitler', alive:true}
+  n: 0,
+  presidentIdx: 0,
+  chancellorIdx: null,
+  lastPresidentIdx: null,    // governo ELEITO anterior (limite de mandato)
+  lastChancellorIdx: null,
+  lib: 0, fas: 0,
+  electionTracker: 0,
+  deck: [], discard: [],
+  drawn: [],                 // cartas na mão durante sessão legislativa
+  specialReturnIdx: null,    // p/ retomar rotação após Eleição Especial
+  investigated: [],          // índices já investigados
+  vetoUnlocked: false,
+  started: false, ended: false,
+};
+
+/* ---- persistência (salvar/continuar) ---- */
+const SAVE_KEY='dossie_save_v1';
+function saveGame(){ try{ localStorage.setItem(SAVE_KEY, JSON.stringify(G)); }catch(e){} }
+function clearSave(){ try{ localStorage.removeItem(SAVE_KEY); }catch(e){} }
+function loadSaved(){ try{ return JSON.parse(localStorage.getItem(SAVE_KEY)); }catch(e){ return null; } }
+function inMemoryResumable(){ return G.players && G.players.length>=5 && G.started && !G.ended; }
+function hasResumable(){ return inMemoryResumable() || !!loadSaved(); }
+
+/* Distribuição de papéis por nº de jogadores.
+   Chaves internas: liberal=Humano, fascist=Patista, hitler=Pato Secreto.
+   fascists = patistas comuns (Pato Secreto à parte). total = lib+fas+1. */
+const DIST = {
+  5:{lib:3,fas:1,hitlerKnows:true},
+  6:{lib:4,fas:1,hitlerKnows:true},
+  7:{lib:4,fas:2,hitlerKnows:false},
+  8:{lib:5,fas:2,hitlerKnows:false},
+  9:{lib:5,fas:3,hitlerKnows:false},
+  10:{lib:6,fas:3,hitlerKnows:false},
+};
+
+/* Poderes presidenciais por faixa de jogadores e nº da política fascista (1..5).
+   null = sem poder. A 6ª política fascista é vitória (tratada à parte). */
+function powerFor(n, fascistNumber){
+  let track;
+  if(n<=6)      track=[null,null,'peek','execution','execution'];
+  else if(n<=8) track=[null,'investigate','special','execution','execution'];
+  else          track=['investigate','investigate','special','execution','execution'];
+  return track[fascistNumber-1] || null;
+}
+const POWER_LABEL = {
+  investigate:'Investigar lealdade',
+  special:'Eleição especial',
+  peek:'Espiar pauta',
+  execution:'Execução',
+};
+
+/* ===========================================================================
+   TEXTOS DAS PAUTAS (sabor temático — não alteram regras)
+   liberal = pauta HUMANA · fascist = pauta PATISTA.
+   Cada carta sacada recebe um texto sorteado deste acervo. Edite à vontade.
+   =========================================================================== */
+const POLICY_TEXTS = {
+  liberal: [
+    'PROTOCOLO DE TRIAGEM — Toda autoridade empossada comprova, sob exame, a ausência de penas, bico e membranas.',
+    'AUDITORIA DO LAGO — Investiga-se a origem dos assessores recém-chegados "lá do interior".',
+    'COMISSÃO DA VERDADE — Abrem-se os arquivos sobre os grasnados ouvidos, à noite, no gabinete.',
+    'CERCA SANITÁRIA — O perímetro dos prédios públicos é reforçado contra visitantes aquáticos.',
+    'VIGÍLIA CIDADÃ — A população aprende a flagrar quem anda gingando — e param de jogar migalhas no plenário.',
+    'PACTO DE TRANSPARÊNCIA — As sessões de governo passam a ser transmitidas, ao vivo, sem cortes.',
+    'TESTE DA ESCADA — Candidatos sobem três lances; quem chega lá em cima bamboleando é detido para averiguação.',
+    'DETECTOR DE GRASNADO — Microfones do plenário passam a registrar qualquer "quack" suspeito.',
+  ],
+  fascist: [
+    'DIRETRIZ DE INFILTRAÇÃO — Agentes patistas recebem documentos humanos e aulas intensivas de postura ereta.',
+    'MIGALHAS DE ESTADO — Verba pública é desviada, em sigilo, para abastecer os comedouros do partido.',
+    'DECRETO DA LAGOA — Constrói-se um lago ornamental — com acesso direto ao gabinete — no jardim do palácio.',
+    'CENSURA AO "QUACK" — Proíbe-se mencionar penas, bicos ou grasnados na imprensa oficial.',
+    'REENGENHARIA DA MÍDIA — A narrativa oficial jura que aquilo ali é apenas um cisne muito convicto.',
+    'OPERAÇÃO MARRECO — Servidores céticos são, um a um, transferidos para uma repartição no pântano.',
+    'FILA PREFERENCIAL — Cria-se acesso livre, sem revista, para quem chega de colete impermeável.',
+    'CÉLULAS ADORMECIDAS — Novos patinhos são posicionados, discretamente, nos escalões intermediários.',
+    'TOQUE DE RECOLHER — Proíbe-se circular à noite — justo quando o bando se reúne no lago.',
+    'REQUISIÇÃO DE PÃO — Toda a reserva de pães do Estado é declarada "patrimônio estratégico do partido".',
+    'BANHO OFICIAL — Instala-se uma fonte no centro do plenário, "por questões protocolares".',
+    'PROTOCOLO PRESIDENCIAL — Prepara-se o terreno político para a ascensão do Pato à cadeira maior.',
+  ],
+};
+function pickPolicyText(type){ const a=POLICY_TEXTS[type]; return a[Math.floor(Math.random()*a.length)]; }
+
+/* ===========================================================================
+   UTIL
+   =========================================================================== */
+const $ = sel => document.querySelector(sel);
+const el = (tag, cls, html) => { const e=document.createElement(tag); if(cls)e.className=cls; if(html!=null)e.innerHTML=html; return e; };
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); $('#'+id).classList.add('active'); const hb=$('#homeBtn'); if(hb) hb.hidden=(id==='screen-home'); window.scrollTo(0,0); }
+function alive(i){ return G.players[i].alive; }
+function nextAliveFrom(i){ let k=i; for(let c=0;c<G.n;c++){ k=(k+1)%G.n; if(alive(k)) return k; } return i; }
+
+/* ===========================================================================
+   ARTE — mapeia cada slot a um arquivo em /art (nomes no tema "Pato Secreto").
+   Basta colocar o PNG correspondente na pasta art/ que ele aparece sozinho;
+   se o arquivo não existir, mostra-se o placeholder pontilhado.
+   =========================================================================== */
+const ART_FILES = {
+  'logo':          'logo',             // art/logo.png            (banner 5:2)
+  'role-liberal':  'humano',           // art/humano.png          (carta 3:4)
+  'role-fascist':  'patista',          // art/patista.png         (carta 3:4)
+  'role-hitler':   'pato-secreto',     // art/pato-secreto.png    (carta 3:4)
+  'party-liberal': 'filiacao-humano',  // art/filiacao-humano.png (carta 3:4)
+  'party-fascist': 'filiacao-patista', // art/filiacao-patista.png(carta 3:4)
+  'end-liberal':   'vitoria-humanos',  // art/vitoria-humanos.png (carta 3:4)
+  'end-fascist':   'vitoria-patistas', // art/vitoria-patistas.png(carta 3:4)
+};
+function art(slot, cls, label){
+  const file = ART_FILES[slot] || slot;
+  return `<div class="art-slot ${cls}" data-art="${slot}">`
+       + `<img class="art-img" src="art/${file}.png" alt="${label}"`
+       + ` onload="this.closest('.art-slot').classList.add('has-art')"`
+       + ` onerror="this.remove()">`
+       + `<span class="hint">${label}</span></div>`;
+}
+
+/* ===========================================================================
+   SETUP / NOMES
+   =========================================================================== */
+const names = [];
+function renderNames(){
+  const list=$('#playerList'); list.innerHTML='';
+  names.forEach((nm,i)=>{
+    const li=el('li');
+    li.innerHTML=`<span class="num">${String(i+1).padStart(2,'0')}</span><span>${nm}</span>`;
+    const x=el('button','x','✕'); x.onclick=()=>{ names.splice(i,1); renderNames(); };
+    li.appendChild(x); list.appendChild(li);
+  });
+  $('#startBtn').disabled = names.length<5 || names.length>10;
+  $('#setupHint').textContent = names.length<5
+    ? `Faltam ${5-names.length} agente(s). Mínimo 5, máximo 10.`
+    : names.length>=10 ? 'Lotação máxima atingida (10).'
+    : `${names.length} agentes registrados. Pode iniciar quando quiser.`;
+}
+function addName(){
+  const inp=$('#nameInput'); let v=inp.value.trim();
+  if(!v) return;
+  if(names.length>=10) return;
+  if(names.some(n=>n.toLowerCase()===v.toLowerCase())){ v=v+' II'; }
+  names.push(v); inp.value=''; inp.focus(); renderNames();
+}
+$('#addBtn').onclick=addName;
+$('#nameInput').addEventListener('keydown',e=>{ if(e.key==='Enter') addName(); });
+$('#startBtn').onclick=startGame;
+
+/* ===========================================================================
+   INÍCIO DE PARTIDA — papéis e baralho
+   =========================================================================== */
+function startGame(){
+  G.n = names.length;
+  const d = DIST[G.n];
+  const roles = [];
+  for(let i=0;i<d.lib;i++) roles.push('liberal');
+  for(let i=0;i<d.fas;i++) roles.push('fascist');
+  roles.push('hitler');
+  shuffle(roles);
+  G.players = names.map((nm,i)=>({ name:nm, role:roles[i], alive:true }));
+
+  // baralho: 6 humanas (liberal) + 11 patistas (fascist)
+  G.deck=[]; for(let i=0;i<6;i++)G.deck.push('liberal'); for(let i=0;i<11;i++)G.deck.push('fascist');
+  shuffle(G.deck); G.discard=[];
+
+  G.presidentIdx = Math.floor(Math.random()*G.n);
+  G.lib=0; G.fas=0; G.electionTracker=0;
+  G.lastPresidentIdx=null; G.lastChancellorIdx=null;
+  G.specialReturnIdx=null; G.investigated=[]; G.vetoUnlocked=false;
+  G.started=false; G.ended=false; clearSave();
+
+  show('screen-roles');
+  startRoleReveal();
+}
+
+/* --- distribuição secreta: passa-aparelho jogador a jogador --- */
+let revealIdx=0;
+function startRoleReveal(){ revealIdx=0; roleHandoff(); }
+function roleHandoff(){
+  if(revealIdx>=G.n){ // todos viram -> começa o jogo
+    show('screen-game'); renderBoard(); beginRound(); return;
+  }
+  const p=G.players[revealIdx];
+  doHandoff(p.name, 'Ver meu dossiê', 'Conteúdo confidencial.', ()=>renderRoleCard());
+}
+function renderRoleCard(){
+  const p=G.players[revealIdx];
+  const d=DIST[G.n];
+  const stage=$('#roleStage');
+  let teamInfo='';
+  if(p.role==='liberal'){
+    teamInfo=`<p class="small muted">Você desconhece os demais. Desmascare os patistas pela dedução.</p>`;
+  } else if(p.role==='fascist'){
+    const mates=G.players.filter((q,i)=>i!==revealIdx && (q.role==='fascist'||q.role==='hitler'))
+      .map(q=> q.role==='hitler' ? `<b>${q.name}</b> (Pato Secreto)` : q.name );
+    teamInfo=`<p class="small">Sua célula: ${mates.join(', ')}.</p>`;
+  } else { // hitler -> Pato Secreto
+    if(d.hitlerKnows){
+      const mate=G.players.find((q,i)=>i!==revealIdx && q.role==='fascist');
+      teamInfo=`<p class="small">Seu agente patista: <b>${mate?mate.name:'—'}</b>.</p>`;
+    } else {
+      teamInfo=`<p class="small muted">Você não conhece sua célula. Conquiste a confiança dos humanos.</p>`;
+    }
+  }
+  const roleName = p.role==='liberal'?'HUMANO': p.role==='fascist'?'PATISTA':'PATO SECRETO';
+  const roleCls  = p.role==='liberal'?'lib':'fas';
+  stage.innerHTML = `
+    <div class="center">
+      <span class="eyebrow">Dossiê de ${p.name}</span>
+      <div style="max-width:200px;margin:10px auto;">
+        ${art('role-'+p.role, 'art-card', 'ARTE · CARTA '+roleName)}
+      </div>
+      <h2 class="title">${roleName}</h2>
+      ${teamInfo}
+      <hr class="rule dotted">
+      <button class="btn primary" id="roleNext">Guardar &amp; passar</button>
+    </div>`;
+  $('#roleNext').onclick=()=>{ revealIdx++; roleHandoff(); };
+}
+
+/* ===========================================================================
+   HANDOFF GENÉRICO (passar o aparelho com sigilo)
+   =========================================================================== */
+function doHandoff(name, btnLabel, note, cb){
+  $('#handoffTo').innerHTML = `Passe para<br>${name}`;
+  $('#handoffNote').textContent = note||'';
+  $('#handoffBtn').textContent = btnLabel||'Revelar';
+  $('#handoff').hidden=false;
+  $('#handoffBtn').onclick=()=>{ $('#handoff').hidden=true; cb(); };
+}
+
+/* ===========================================================================
+   BOARD (trilhas, eleição, baralho)
+   =========================================================================== */
+function renderBoard(){
+  // trilha liberal — 5 espaços
+  const libT=$('#libTrack'); libT.innerHTML='';
+  for(let i=0;i<5;i++){
+    const s=el('div','slot'+(i<G.lib?' filled lib':''), i<G.lib?'★':'');
+    libT.appendChild(s);
+  }
+  $('#libCount').textContent=`${G.lib}/5`;
+
+  // trilha fascista — 6 espaços, com rótulo de poder
+  const fasT=$('#fasTrack'); fasT.innerHTML='';
+  for(let i=0;i<6;i++){
+    const filled=i<G.fas;
+    const s=el('div','slot'+(filled?' filled fas':''), filled?'■':'');
+    const num=i+1;
+    let pw = num===6 ? 'VITÓRIA PATISTA' : (POWER_LABEL[powerFor(G.n,num)]||'');
+    if(num===3) pw = (pw?pw+' · ':'')+'Pato→Chanc.';
+    if(pw) s.appendChild(el('span','pw',pw));
+    fasT.appendChild(s);
+  }
+  $('#fasCount').textContent=`${G.fas}/6`;
+
+  // trilha de eleição (3)
+  const dots=$('#electionDots'); dots.innerHTML='';
+  for(let i=0;i<3;i++) dots.appendChild(el('div','dot'+(i<G.electionTracker?' on':'')));
+  $('#deckInfo').textContent=`baralho: ${G.deck.length} · descarte: ${G.discard.length}`;
+}
+
+/* ===========================================================================
+   ELEGIBILIDADE / LIMITE DE MANDATO
+   =========================================================================== */
+function eligibleChancellors(){
+  const alivePlayers = G.players.filter(p=>p.alive).length;
+  return G.players.map((p,i)=>i).filter(i=>{
+    if(!alive(i)) return false;
+    if(i===G.presidentIdx) return false;
+    if(i===G.lastChancellorIdx) return false;
+    // presidente eleito anterior só fica inelegível se houver >5 vivos
+    if(alivePlayers>5 && i===G.lastPresidentIdx) return false;
+    return true;
+  });
+}
+
+/* ===========================================================================
+   FLUXO DE RODADA
+   =========================================================================== */
+function beginRound(){
+  G.chancellorIdx=null; G.drawn=[];
+  G.started=true; saveGame();   // ponto de retomada de "Continuar jogo"
+  renderBoard();
+  phaseNomination();
+}
+
+/* --- 1) NOMEAÇÃO --- */
+function phaseNomination(){
+  const pres=G.players[G.presidentIdx];
+  const elig=eligibleChancellors();
+  const area=$('#phaseArea');
+  let grid = G.players.map((p,i)=>{
+    const ok = elig.includes(i);
+    return `<button class="btn ${ok?'':'dead'}" ${ok?'':'disabled'} data-i="${i}">${p.name}</button>`;
+  }).join('');
+  area.innerHTML=`
+    <span class="eyebrow">Eleição · formação de governo</span>
+    <hr class="rule">
+    <div class="gov">
+      <div class="role-box"><div class="k">Presidente</div><div class="v">${pres.name}</div></div>
+      <div class="role-box"><div class="k">Chanceler</div><div class="v muted">a nomear…</div></div>
+    </div>
+    <p class="small muted">${pres.name}, indique um(a) chanceler elegível:</p>
+    <div class="pick">${grid}</div>`;
+  area.querySelectorAll('.pick .btn:not(.dead)').forEach(b=>{
+    b.onclick=()=>{ G.chancellorIdx=+b.dataset.i; phaseVote(); };
+  });
+}
+
+/* --- 2) VOTAÇÃO (passa-aparelho, voto público revelado no fim) --- */
+let voteOrder=[], voteIdx=0, voteRecord={};
+function phaseVote(){
+  voteOrder=G.players.map((p,i)=>i).filter(alive);
+  voteIdx=0; voteRecord={};
+  nextVoter();
+}
+function nextVoter(){
+  if(voteIdx>=voteOrder.length){ return resolveVote(); }
+  const i=voteOrder[voteIdx];
+  const name=G.players[i].name;
+  doHandoff(name,'Votar em sigilo','Voto secreto até a apuração.',()=>{
+    const pres=G.players[G.presidentIdx].name, ch=G.players[G.chancellorIdx].name;
+    $('#phaseArea').innerHTML=`
+      <span class="eyebrow">Cédula de ${name}</span>
+      <hr class="rule">
+      <p class="center">Governo proposto:<br><b>Pres.</b> ${pres} &nbsp;·&nbsp; <b>Chanc.</b> ${ch}</p>
+      <div class="btn-row">
+        <button class="btn lib" id="vJa">SIM</button>
+        <button class="btn fas" id="vNein">NÃO</button>
+      </div>`;
+    $('#vJa').onclick=()=>castVote(i,true);
+    $('#vNein').onclick=()=>castVote(i,false);
+  });
+}
+function castVote(i,ja){ voteRecord[i]=ja; voteIdx++; nextVoter(); }
+function resolveVote(){
+  const jas = Object.values(voteRecord).filter(v=>v).length;
+  const total = voteOrder.length;
+  const passed = jas > total/2;          // empate = falha
+  // registro público
+  const tally = voteOrder.map(i=>{
+    const ja=voteRecord[i];
+    return `<span class="v ${ja?'ja':'nein'}">${G.players[i].name}: ${ja?'SIM':'NÃO'}</span>`;
+  }).join('');
+  const pres=G.players[G.presidentIdx].name, ch=G.players[G.chancellorIdx].name;
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Apuração pública</span>
+    <hr class="rule">
+    <p class="center"><b>Pres.</b> ${pres} · <b>Chanc.</b> ${ch}</p>
+    <div class="tally">${tally}</div>
+    <p class="center"><b>${jas}</b> SIM × <b>${total-jas}</b> NÃO —
+      <span class="${passed?'win-lib':'win-fas'}">${passed?'GOVERNO ELEITO':'REJEITADO'}</span></p>
+    <button class="btn primary" id="voteNext">${passed?'Sessão legislativa':'Próxima candidatura'}</button>`;
+  $('#voteNext').onclick = passed ? onElected : onRejected;
+}
+function onRejected(){
+  G.electionTracker++;
+  if(G.electionTracker>=3){ return chaos(); }
+  advancePresidency();
+  renderBoard(); beginRound();
+}
+function onElected(){
+  // checagem: Pato Secreto eleito chanceler após 3 pautas patistas?
+  if(G.fas>=3 && G.players[G.chancellorIdx].role==='hitler'){
+    return endGame('fascist','O Pato Secreto foi eleito Chanceler após a 3ª pauta patista.');
+  }
+  G.lastPresidentIdx=G.presidentIdx;
+  G.lastChancellorIdx=G.chancellorIdx;
+  phaseLegislativePresident();
+}
+
+/* caos: 3 governos rejeitados -> promulga topo, ignora poder, reseta */
+function chaos(){
+  ensureDeck(1);
+  const top=G.deck.shift();
+  if(top==='liberal') G.lib++; else G.fas++;
+  G.electionTracker=0;
+  G.lastPresidentIdx=null; G.lastChancellorIdx=null; // mandatos esquecidos
+  renderBoard();
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">O país mergulha no caos</span>
+    <hr class="rule">
+    <p class="center">Três governos rejeitados. A população promulga a pauta do topo:
+      <b class="${top==='liberal'?'win-lib':'win-fas'}">${top==='liberal'?'HUMANA':'PATISTA'}</b>.</p>
+    <p class="small muted center">Poder ignorado. Limites de mandato esquecidos.</p>
+    <button class="btn primary" id="chaosNext">Continuar</button>`;
+  $('#chaosNext').onclick=()=>{
+    const w=checkPolicyWin(); if(w) return;
+    advancePresidency(); renderBoard(); beginRound();
+  };
+}
+
+/* --- 3) SESSÃO LEGISLATIVA --- */
+function ensureDeck(min){
+  if(G.deck.length<min){ G.deck=shuffle(G.deck.concat(G.discard)); G.discard=[]; }
+}
+function polyCard(type, idx, chosen, selectable, text){
+  if(selectable===undefined) selectable=true;
+  const label = type==='liberal'?'Pauta Humana':'Pauta Patista';
+  const hint  = selectable ? 'toque para selecionar' : 'somente leitura';
+  // .pbody mostra o TEXTO da pauta. Para usar arte própria, troque o <p> por uma <img>.
+  return `<div class="poly ${selectable?'sel':''} ${chosen?'chosen':''}" data-type="${type}" data-i="${idx}">
+      <div class="ptag"><span>${label}</span><span class="hintsel">${hint}</span></div>
+      <div class="pbody"><p class="ptext">${text||''}</p></div>
+    </div>`;
+}
+function phaseLegislativePresident(){
+  ensureDeck(3);
+  // cada carta sacada vira {type, text} para o texto seguir do Pres. ao Chanc.
+  G.drawn=[0,1,2].map(()=>{ const t=G.deck.shift(); return {type:t, text:pickPolicyText(t)}; });
+  const pres=G.players[G.presidentIdx].name;
+  doHandoff(pres,'Ver as 3 cartas','O presidente descarta 1 em sigilo.',()=>{
+    renderPresidentHand();
+  });
+}
+function renderPresidentHand(){
+  const pres=G.players[G.presidentIdx].name;
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Sessão legislativa · ${pres} (Pres.)</span>
+    <hr class="rule">
+    <p class="small center">Toque na carta que deseja <b>DESCARTAR</b>. As outras 2 vão ao Chanceler.</p>
+    <div class="hand">${G.drawn.map((c,i)=>polyCard(c.type,i,false,true,c.text)).join('')}</div>`;
+  $('#phaseArea').querySelectorAll('.poly').forEach(c=>{
+    c.onclick=()=>{
+      const di=+c.dataset.i;
+      G.discard.push(G.drawn[di].type);
+      G.drawn.splice(di,1); // restam 2
+      const ch=G.players[G.chancellorIdx].name;
+      doHandoff(ch,'Ver as 2 cartas','O chanceler promulga 1 em sigilo.',renderChancellorHand);
+    };
+  });
+}
+function renderChancellorHand(){
+  const ch=G.players[G.chancellorIdx].name;
+  const veto = G.vetoUnlocked;
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Sessão legislativa · ${ch} (Chanc.)</span>
+    <hr class="rule">
+    <p class="small center">Toque na carta que deseja <b>PROMULGAR</b>.</p>
+    <div class="hand">${G.drawn.map((c,i)=>polyCard(c.type,i,false,true,c.text)).join('')}</div>
+    ${veto?`<button class="btn ghost" id="vetoBtn">Solicitar veto desta pauta</button>`:''}`;
+  $('#phaseArea').querySelectorAll('.poly').forEach(c=>{
+    c.onclick=()=>{
+      const ei=+c.dataset.i;
+      const enacted=G.drawn[ei];
+      G.drawn.splice(ei,1); G.discard.push(...G.drawn.map(x=>x.type)); G.drawn=[];
+      enactPolicy(enacted.type);
+    };
+  });
+  if(veto) $('#vetoBtn').onclick=requestVeto;
+}
+
+/* --- VETO (após 5 pautas patistas) --- */
+function requestVeto(){
+  const pres=G.players[G.presidentIdx].name;
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Pedido de veto</span>
+    <hr class="rule">
+    <p class="center">O Chanceler deseja vetar a pauta. <b>${pres}</b> (Presidente), você concorda?</p>
+    <div class="btn-row">
+      <button class="btn" id="vetoYes">Concordo com o veto</button>
+      <button class="btn" id="vetoNo">Recuso — promulgar</button>
+    </div>`;
+  $('#vetoYes').onclick=()=>{
+    G.discard.push(...G.drawn.map(x=>x.type)); G.drawn=[];
+    G.electionTracker++;
+    if(G.electionTracker>=3){ return chaos(); }
+    advancePresidency(); renderBoard(); beginRound();
+  };
+  $('#vetoNo').onclick=renderChancellorHand;
+}
+
+function enactPolicy(type){
+  if(type==='liberal') G.lib++; else G.fas++;
+  G.electionTracker=0;
+  if(G.fas>=5) G.vetoUnlocked=true;
+  renderBoard();
+  if(checkPolicyWin()) return;
+  // poder presidencial?
+  const power = (type==='fascist') ? powerFor(G.n, G.fas) : null;
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Pauta promulgada</span>
+    <hr class="rule">
+    <p class="center">Nova pauta <b class="${type==='liberal'?'win-lib':'win-fas'}">${type==='liberal'?'HUMANA':'PATISTA'}</b> em vigor.</p>
+    ${power?`<p class="center small">Poder concedido ao Presidente: <b>${POWER_LABEL[power]}</b>.</p>`:''}
+    <button class="btn primary" id="legNext">${power?'Exercer poder':'Encerrar rodada'}</button>`;
+  $('#legNext').onclick = power ? ()=>executive(power) : endRound;
+}
+
+function checkPolicyWin(){
+  if(G.lib>=5){ endGame('liberal','Cinco pautas humanas promulgadas.'); return true; }
+  if(G.fas>=6){ endGame('fascist','Seis pautas patistas promulgadas.'); return true; }
+  return false;
+}
+
+/* --- 4) AÇÃO EXECUTIVA (poderes) --- */
+function executive(power){
+  if(power==='peek') return powerPeek();
+  if(power==='investigate') return powerInvestigate();
+  if(power==='special') return powerSpecial();
+  if(power==='execution') return powerExecution();
+}
+
+function powerPeek(){
+  ensureDeck(3);
+  const pres=G.players[G.presidentIdx].name;
+  doHandoff(pres,'Espiar o topo','Apenas o Presidente vê.',()=>{
+    const top=G.deck.slice(0,3);
+    $('#phaseArea').innerHTML=`
+      <span class="eyebrow">Espiar pauta · ${pres}</span>
+      <hr class="rule">
+      <p class="small center">Próximas 3 cartas (ordem do topo, sem alterar):</p>
+      <div class="hand">${top.map((t,i)=>polyCard(t,i,false,false,pickPolicyText(t))).join('')}</div>
+      <button class="btn primary" id="peekDone">Memorizei — encerrar</button>`;
+    $('#peekDone').onclick=endRound;
+  });
+}
+
+function powerInvestigate(){
+  const pres=G.players[G.presidentIdx].name;
+  const opts=G.players.map((p,i)=>i).filter(i=>i!==G.presidentIdx && alive(i) && !G.investigated.includes(i));
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Investigar lealdade · ${pres}</span>
+    <hr class="rule">
+    <p class="small center">${pres}, escolha quem investigar (ninguém pode ser investigado 2×):</p>
+    <div class="pick">${opts.map(i=>`<button class="btn" data-i="${i}">${G.players[i].name}</button>`).join('')}</div>`;
+  $('#phaseArea').querySelectorAll('.pick .btn').forEach(b=>{
+    b.onclick=()=>{
+      const i=+b.dataset.i; G.investigated.push(i);
+      doHandoff(pres,'Ver filiação','Resultado só para o Presidente.',()=>{
+        const t=G.players[i];
+        const party = t.role==='liberal'?'HUMANO':'PATISTA'; // Pato Secreto exibe PATISTA
+        const cls   = t.role==='liberal'?'lib':'fas';
+        $('#phaseArea').innerHTML=`
+          <span class="eyebrow">Filiação de ${t.name}</span>
+          <hr class="rule">
+          <div class="center" style="max-width:180px;margin:10px auto;">
+            ${art('party-'+(t.role==='liberal'?'liberal':'fascist'),'art-card','ARTE · FILIAÇÃO')}
+          </div>
+          <h2 class="title center ${cls==='lib'?'win-lib':'win-fas'}">${party}</h2>
+          <p class="small muted center">Você pode mentir sobre isso à mesa.</p>
+          <button class="btn primary" id="invDone">Guardar &amp; encerrar</button>`;
+        $('#invDone').onclick=endRound;
+      });
+    };
+  });
+}
+
+function powerSpecial(){
+  const pres=G.players[G.presidentIdx].name;
+  const opts=G.players.map((p,i)=>i).filter(i=>i!==G.presidentIdx && alive(i));
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Eleição especial · ${pres}</span>
+    <hr class="rule">
+    <p class="small center">${pres}, escolha o próximo Presidente (qualquer um, mesmo com mandato vencido):</p>
+    <div class="pick">${opts.map(i=>`<button class="btn" data-i="${i}">${G.players[i].name}</button>`).join('')}</div>`;
+  $('#phaseArea').querySelectorAll('.pick .btn').forEach(b=>{
+    b.onclick=()=>{
+      // a presidência retorna ao jogador à esquerda de quem convocou
+      G.specialReturnIdx = nextAliveFrom(G.presidentIdx);
+      G.presidentIdx = +b.dataset.i;
+      renderBoard(); beginRound();
+    };
+  });
+}
+
+function powerExecution(){
+  const pres=G.players[G.presidentIdx].name;
+  const opts=G.players.map((p,i)=>i).filter(i=>i!==G.presidentIdx && alive(i));
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Execução · ${pres}</span>
+    <hr class="rule">
+    <p class="small center">${pres}: «Eu formalmente executo…». Escolha o alvo:</p>
+    <div class="pick">${opts.map(i=>`<button class="btn fas" data-i="${i}">${G.players[i].name}</button>`).join('')}</div>`;
+  $('#phaseArea').querySelectorAll('.pick .btn').forEach(b=>{
+    b.onclick=()=>{
+      const i=+b.dataset.i;
+      G.players[i].alive=false;
+      if(G.players[i].role==='hitler'){
+        return endGame('liberal',`${G.players[i].name} era o Pato Secreto. A conspiração foi por água abaixo.`);
+      }
+      $('#phaseArea').innerHTML=`
+        <span class="eyebrow">Execução cumprida</span>
+        <hr class="rule">
+        <p class="center"><b>${G.players[i].name}</b> foi removido do jogo.
+          A mesa não sabe se caiu um liberal ou um fascista.</p>
+        <button class="btn primary" id="exDone">Encerrar rodada</button>`;
+      $('#exDone').onclick=endRound;
+    };
+  });
+}
+
+/* ===========================================================================
+   ENCERRAMENTO DE RODADA / ROTAÇÃO
+   =========================================================================== */
+function advancePresidency(){
+  if(G.specialReturnIdx!=null){
+    G.presidentIdx=G.specialReturnIdx; G.specialReturnIdx=null;
+  } else {
+    G.presidentIdx=nextAliveFrom(G.presidentIdx);
+  }
+}
+function endRound(){
+  ensureDeck(3); // garante baralho para a próxima sessão
+  advancePresidency();
+  renderBoard(); beginRound();
+}
+
+/* ===========================================================================
+   FIM DE JOGO
+   =========================================================================== */
+function endGame(team, reason){
+  G.ended=true; clearSave();
+  const win = team==='liberal'?'HUMANOS VENCEM':'PATISTAS VENCEM';
+  const cls = team==='liberal'?'win-lib':'win-fas';
+  // revela todos os papéis
+  const roster = G.players.map(p=>{
+    const r=p.role==='liberal'?'Humano':p.role==='fascist'?'Patista':'Pato Secreto';
+    return `<li><span>${p.name}${p.alive?'':' †'}</span><span class="${p.role==='liberal'?'win-lib':'win-fas'}" style="margin-left:auto">${r}</span></li>`;
+  }).join('');
+  $('#phaseArea').innerHTML=`
+    <div class="gameover">
+      <span class="stamp">Encerrado</span>
+      <div style="max-width:200px;margin:14px auto;">
+        ${art('end-'+team,'art-card','ARTE · DESFECHO '+(team==='liberal'?'HUMANO':'PATISTA'))}
+      </div>
+      <h2 class="winner ${cls}">${win}</h2>
+      <p class="small muted">${reason}</p>
+      <hr class="rule dotted">
+      <ul class="players">${roster}</ul>
+      <button class="btn primary" id="againBtn">Nova partida (mesmos nomes)</button>
+      <button class="btn ghost" id="resetBtn">Refazer convocação</button>
+    </div>`;
+  $('#againBtn').onclick=()=>{
+    if(!names.length && G.players.length){ G.players.forEach(p=>names.push(p.name)); }
+    startGame();
+  };
+  $('#resetBtn').onclick=()=>{ names.length=0; renderNames(); show('screen-setup'); };
+}
+
+/* ===========================================================================
+   NAVEGAÇÃO DA PÁGINA INICIAL
+   =========================================================================== */
+function goHome(){ if(inMemoryResumable()) saveGame(); show('screen-home'); refreshHome(); }
+function refreshHome(){
+  const can=hasResumable();
+  $('#continueBtn').disabled=!can;
+  const st=$('#homeStatus');
+  const g = inMemoryResumable() ? G : loadSaved();
+  if(can && g && g.players){
+    st.textContent=`Partida em andamento · ${g.players.length} agentes · ${g.lib} liberais / ${g.fas} fascistas`;
+    st.hidden=false;
+  } else { st.hidden=true; }
+}
+function resumeGame(){
+  if(!inMemoryResumable()){
+    const s=loadSaved(); if(!s||!s.players||!s.players.length) return;
+    Object.assign(G, s);
+  }
+  G.ended=false;
+  show('screen-game');
+  beginRound();   // retoma na nomeação da rodada atual (papéis já conhecidos)
+}
+
+$('#homeNew').onclick   = ()=>{ show('screen-setup'); renderNames(); };
+$('#continueBtn').onclick = resumeGame;
+$('#homeInstr').onclick = ()=>show('screen-instructions');
+$('#homeBtn').onclick   = goHome;
+$('#instrBack').onclick = ()=>{ show('screen-home'); refreshHome(); };
+refreshHome();
+
+/* ---- registro do service worker (instalação/offline) ----
+   No-op em file:// e em ambientes sem suporte (ex.: prévia em sandbox). */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); });
+}
+
+</script>
+</body>
+</html>
