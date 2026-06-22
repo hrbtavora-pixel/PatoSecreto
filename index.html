@@ -121,6 +121,13 @@ button{ font-family:var(--font-body); font-size:1rem; cursor:pointer; }
 .btn-row{ display:flex; gap:8px; }
 .btn-row .btn{ margin:8px 0; }
 
+/* contador da votação ao vivo */
+.stepper{ display:flex; align-items:center; justify-content:center; gap:16px; margin:18px 0; }
+.stepper .btn{ width:66px; font-size:1.7rem; line-height:1; margin:0; padding:10px 0; }
+.stepper .count{ min-width:92px; text-align:center; }
+.stepper .count #simN{ font-family:var(--font-disp); font-size:2.6rem; line-height:1; display:block; }
+.stepper .count small{ display:block; font-size:.66rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); margin-top:2px; }
+
 /* ---------- inputs ---------- */
 .field{ display:flex; gap:8px; margin:10px 0; }
 input[type=text]{
@@ -709,6 +716,20 @@ function doHandoff(name, btnLabel, note, cb){
   $('#handoffBtn').onclick=()=>{ $('#handoff').hidden=true; cb(); };
 }
 
+/* Etapa de confirmação genérica: mostra o que será feito, com Confirmar / Voltar.
+   onConfirm executa a ação; onBack reabre a tela de escolha anterior. */
+function confirmStep(text, confirmLabel, onConfirm, onBack){
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Confirmar ação</span>
+    <hr class="rule">
+    <p class="center">${text}</p>
+    <button class="btn primary" id="cfYes">${confirmLabel}</button>
+    <button class="btn ghost" id="cfNo">Voltar</button>`;
+  $('#cfYes').onclick=onConfirm;
+  $('#cfNo').onclick=onBack;
+  window.scrollTo(0,0);
+}
+
 /* ===========================================================================
    BOARD (trilhas, eleição, baralho)
    =========================================================================== */
@@ -784,54 +805,53 @@ function phaseNomination(){
     <p class="small muted">${pres.name}, indique um(a) chanceler elegível:</p>
     <div class="pick">${grid}</div>`;
   area.querySelectorAll('.pick .btn:not(.dead)').forEach(b=>{
-    b.onclick=()=>{ G.chancellorIdx=+b.dataset.i; phaseVote(); };
+    b.onclick=()=>{
+      const i=+b.dataset.i;
+      confirmStep(
+        `<b>${pres.name}</b> indica <b>${G.players[i].name}</b> para Chanceler.<br>A mesa vai votar neste governo.`,
+        'Confirmar indicação',
+        ()=>{ G.chancellorIdx=i; phaseVote(); },
+        phaseNomination
+      );
+    };
   });
 }
 
-/* --- 2) VOTAÇÃO (passa-aparelho, voto público revelado no fim) --- */
-let voteOrder=[], voteIdx=0, voteRecord={};
-function phaseVote(){
-  voteOrder=G.players.map((p,i)=>i).filter(alive);
-  voteIdx=0; voteRecord={};
-  nextVoter();
+/* --- 2) VOTAÇÃO AO VIVO (mesa vota em voz alta; uma pessoa conta e confirma) --- */
+let simVotes=0;
+function aliveCount(){ return G.players.filter(p=>p.alive).length; }
+function phaseVote(){ simVotes=0; renderVoteEntry(); }
+function renderVoteEntry(){
+  const pres=G.players[G.presidentIdx].name, ch=G.players[G.chancellorIdx].name;
+  const total=aliveCount();
+  const passed = simVotes > total/2;          // empate = rejeitado
+  $('#phaseArea').innerHTML=`
+    <span class="eyebrow">Votação ao vivo</span>
+    <hr class="rule">
+    <p class="center">Governo proposto:<br><b>Pres.</b> ${pres} &nbsp;·&nbsp; <b>Chanc.</b> ${ch}</p>
+    <p class="small center muted">Todos votam ao mesmo tempo — de viva voz ou com a mão.
+       Uma pessoa conta os votos <b>SIM</b> e confirma o resultado.</p>
+    <div class="stepper">
+      <button class="btn" id="vMinus">−</button>
+      <div class="count"><span id="simN">${simVotes}</span><small>de ${total} · SIM</small></div>
+      <button class="btn" id="vPlus">＋</button>
+    </div>
+    <p class="center" id="voteStatus">${simVotes} SIM × ${total-simVotes} NÃO —
+      <b class="${passed?'win-lib':'win-fas'}">${passed?'APROVADO':'REJEITADO'}</b></p>
+    <button class="btn primary" id="voteConfirm">Confirmar: ${simVotes} SIM de ${total} (${passed?'governo eleito':'governo rejeitado'})</button>`;
+  $('#vMinus').onclick=()=>{ if(simVotes>0){ simVotes--; renderVoteEntry(); } };
+  $('#vPlus').onclick =()=>{ if(simVotes<total){ simVotes++; renderVoteEntry(); } };
+  $('#voteConfirm').onclick=()=>{ const t=aliveCount(); resolveVote(simVotes>t/2, simVotes, t); };
 }
-function nextVoter(){
-  if(voteIdx>=voteOrder.length){ return resolveVote(); }
-  const i=voteOrder[voteIdx];
-  const name=G.players[i].name;
-  doHandoff(name,'Votar em sigilo','Voto secreto até a apuração.',()=>{
-    const pres=G.players[G.presidentIdx].name, ch=G.players[G.chancellorIdx].name;
-    $('#phaseArea').innerHTML=`
-      <span class="eyebrow">Cédula de ${name}</span>
-      <hr class="rule">
-      <p class="center">Governo proposto:<br><b>Pres.</b> ${pres} &nbsp;·&nbsp; <b>Chanc.</b> ${ch}</p>
-      <div class="btn-row">
-        <button class="btn lib" id="vJa">SIM</button>
-        <button class="btn fas" id="vNein">NÃO</button>
-      </div>`;
-    $('#vJa').onclick=()=>castVote(i,true);
-    $('#vNein').onclick=()=>castVote(i,false);
-  });
-}
-function castVote(i,ja){ voteRecord[i]=ja; voteIdx++; nextVoter(); }
-function resolveVote(){
-  const jas = Object.values(voteRecord).filter(v=>v).length;
-  const total = voteOrder.length;
-  const passed = jas > total/2;          // empate = falha
-  // registro público
-  const tally = voteOrder.map(i=>{
-    const ja=voteRecord[i];
-    return `<span class="v ${ja?'ja':'nein'}">${G.players[i].name}: ${ja?'SIM':'NÃO'}</span>`;
-  }).join('');
+function resolveVote(passed, jas, total){
   const pres=G.players[G.presidentIdx].name, ch=G.players[G.chancellorIdx].name;
   $('#phaseArea').innerHTML=`
-    <span class="eyebrow">Apuração pública</span>
+    <span class="eyebrow">Resultado da votação</span>
     <hr class="rule">
     <p class="center"><b>Pres.</b> ${pres} · <b>Chanc.</b> ${ch}</p>
-    <div class="tally">${tally}</div>
     <p class="center"><b>${jas}</b> SIM × <b>${total-jas}</b> NÃO —
       <span class="${passed?'win-lib':'win-fas'}">${passed?'GOVERNO ELEITO':'REJEITADO'}</span></p>
-    <button class="btn primary" id="voteNext">${passed?'Sessão legislativa':'Próxima candidatura'}</button>`;
+    <button class="btn primary" id="voteNext">${passed?'Seguir para a sessão legislativa':'Próxima candidatura'}</button>`;
   $('#voteNext').onclick = passed ? onElected : onRejected;
 }
 function onRejected(){
@@ -904,10 +924,18 @@ function renderPresidentHand(){
   $('#phaseArea').querySelectorAll('.poly').forEach(c=>{
     c.onclick=()=>{
       const di=+c.dataset.i;
-      G.discard.push(G.drawn[di].type);
-      G.drawn.splice(di,1); // restam 2
-      const ch=G.players[G.chancellorIdx].name;
-      doHandoff(ch,'Ver as 2 cartas','O chanceler promulga 1 em sigilo.',renderChancellorHand);
+      const tipo=G.drawn[di].type==='liberal'?'Humana':'Patista';
+      confirmStep(
+        `Descartar a <b>Pauta ${tipo}</b>?<br>As outras 2 seguem, em sigilo, para o Chanceler.`,
+        'Confirmar descarte',
+        ()=>{
+          G.discard.push(G.drawn[di].type);
+          G.drawn.splice(di,1); // restam 2
+          const ch=G.players[G.chancellorIdx].name;
+          doHandoff(ch,'Ver as 2 cartas','O chanceler promulga 1 em sigilo.',renderChancellorHand);
+        },
+        renderPresidentHand
+      );
     };
   });
 }
@@ -923,9 +951,17 @@ function renderChancellorHand(){
   $('#phaseArea').querySelectorAll('.poly').forEach(c=>{
     c.onclick=()=>{
       const ei=+c.dataset.i;
-      const enacted=G.drawn[ei];
-      G.drawn.splice(ei,1); G.discard.push(...G.drawn.map(x=>x.type)); G.drawn=[];
-      enactPolicy(enacted.type);
+      const tipo=G.drawn[ei].type==='liberal'?'Humana':'Patista';
+      confirmStep(
+        `Promulgar a <b>Pauta ${tipo}</b>?<br>Ela entra em vigor no tabuleiro.`,
+        'Confirmar promulgação',
+        ()=>{
+          const enacted=G.drawn[ei];
+          G.drawn.splice(ei,1); G.discard.push(...G.drawn.map(x=>x.type)); G.drawn=[];
+          enactPolicy(enacted.type);
+        },
+        renderChancellorHand
+      );
     };
   });
   if(veto) $('#vetoBtn').onclick=requestVeto;
@@ -1007,22 +1043,30 @@ function powerInvestigate(){
     <div class="pick">${opts.map(i=>`<button class="btn" data-i="${i}">${G.players[i].name}</button>`).join('')}</div>`;
   $('#phaseArea').querySelectorAll('.pick .btn').forEach(b=>{
     b.onclick=()=>{
-      const i=+b.dataset.i; G.investigated.push(i);
-      doHandoff(pres,'Ver filiação','Resultado só para o Presidente.',()=>{
-        const t=G.players[i];
-        const party = t.role==='liberal'?'HUMANO':'PATISTA'; // Pato Secreto exibe PATISTA
-        const cls   = t.role==='liberal'?'lib':'fas';
-        $('#phaseArea').innerHTML=`
-          <span class="eyebrow">Filiação de ${t.name}</span>
-          <hr class="rule">
-          <div class="center" style="max-width:180px;margin:10px auto;">
-            ${art('party-'+(t.role==='liberal'?'liberal':'fascist'),'art-card','ARTE · FILIAÇÃO')}
-          </div>
-          <h2 class="title center ${cls==='lib'?'win-lib':'win-fas'}">${party}</h2>
-          <p class="small muted center">Você pode mentir sobre isso à mesa.</p>
-          <button class="btn primary" id="invDone">Guardar &amp; encerrar</button>`;
-        $('#invDone').onclick=endRound;
-      });
+      const i=+b.dataset.i;
+      confirmStep(
+        `Investigar a filiação de <b>${G.players[i].name}</b>?<br>Ninguém pode ser investigado duas vezes.`,
+        'Confirmar investigação',
+        ()=>{
+          G.investigated.push(i);
+          doHandoff(pres,'Ver filiação','Resultado só para o Presidente.',()=>{
+            const t=G.players[i];
+            const party = t.role==='liberal'?'HUMANO':'PATISTA'; // Pato Secreto exibe PATISTA
+            const cls   = t.role==='liberal'?'lib':'fas';
+            $('#phaseArea').innerHTML=`
+              <span class="eyebrow">Filiação de ${t.name}</span>
+              <hr class="rule">
+              <div class="center" style="max-width:180px;margin:10px auto;">
+                ${art('party-'+(t.role==='liberal'?'liberal':'fascist'),'art-card','ARTE · FILIAÇÃO')}
+              </div>
+              <h2 class="title center ${cls==='lib'?'win-lib':'win-fas'}">${party}</h2>
+              <p class="small muted center">Você pode mentir sobre isso à mesa.</p>
+              <button class="btn primary" id="invDone">Guardar &amp; encerrar</button>`;
+            $('#invDone').onclick=endRound;
+          });
+        },
+        powerInvestigate
+      );
     };
   });
 }
@@ -1037,10 +1081,18 @@ function powerSpecial(){
     <div class="pick">${opts.map(i=>`<button class="btn" data-i="${i}">${G.players[i].name}</button>`).join('')}</div>`;
   $('#phaseArea').querySelectorAll('.pick .btn').forEach(b=>{
     b.onclick=()=>{
-      // a presidência retorna ao jogador à esquerda de quem convocou
-      G.specialReturnIdx = nextAliveFrom(G.presidentIdx);
-      G.presidentIdx = +b.dataset.i;
-      renderBoard(); beginRound();
+      const i=+b.dataset.i;
+      confirmStep(
+        `Convocar <b>${G.players[i].name}</b> como próximo Presidente?<br>Depois, a presidência volta à rotação normal.`,
+        'Confirmar eleição especial',
+        ()=>{
+          // a presidência retorna ao jogador à esquerda de quem convocou
+          G.specialReturnIdx = nextAliveFrom(G.presidentIdx);
+          G.presidentIdx = i;
+          renderBoard(); beginRound();
+        },
+        powerSpecial
+      );
     };
   });
 }
@@ -1056,17 +1108,24 @@ function powerExecution(){
   $('#phaseArea').querySelectorAll('.pick .btn').forEach(b=>{
     b.onclick=()=>{
       const i=+b.dataset.i;
-      G.players[i].alive=false;
-      if(G.players[i].role==='hitler'){
-        return endGame('liberal',`${G.players[i].name} era o Pato Secreto. A conspiração foi por água abaixo.`);
-      }
-      $('#phaseArea').innerHTML=`
-        <span class="eyebrow">Execução cumprida</span>
-        <hr class="rule">
-        <p class="center"><b>${G.players[i].name}</b> foi removido do jogo.
-          A mesa não sabe se caiu um liberal ou um fascista.</p>
-        <button class="btn primary" id="exDone">Encerrar rodada</button>`;
-      $('#exDone').onclick=endRound;
+      confirmStep(
+        `Executar <b>${G.players[i].name}</b>?<br>Ação irreversível: o jogador sai do jogo (não fala, não vota, não se candidata).`,
+        'Confirmar execução',
+        ()=>{
+          G.players[i].alive=false;
+          if(G.players[i].role==='hitler'){
+            return endGame('liberal',`${G.players[i].name} era o Pato Secreto. A conspiração foi por água abaixo.`);
+          }
+          $('#phaseArea').innerHTML=`
+            <span class="eyebrow">Execução cumprida</span>
+            <hr class="rule">
+            <p class="center"><b>${G.players[i].name}</b> foi removido do jogo.
+              A mesa não sabe se caiu um humano ou um patista.</p>
+            <button class="btn primary" id="exDone">Encerrar rodada</button>`;
+          $('#exDone').onclick=endRound;
+        },
+        powerExecution
+      );
     };
   });
 }
