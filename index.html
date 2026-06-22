@@ -129,7 +129,9 @@ button{ font-family:var(--font-body); font-size:1rem; cursor:pointer; }
 .stepper .count small{ display:block; font-size:.66rem; letter-spacing:1.5px; text-transform:uppercase; color:var(--ink-soft); margin-top:2px; }
 
 /* ---------- inputs ---------- */
-.field{ display:flex; gap:8px; margin:10px 0; }
+.field{ display:flex; gap:8px; margin:10px 0; align-items:stretch; }
+.field input[type=text]{ min-width:0; }      /* deixa o input encolher no celular */
+.field .btn{ flex:0 0 auto; width:auto; margin:0; white-space:nowrap; }
 input[type=text]{
   flex:1; font-family:var(--font-body); font-size:1rem; padding:11px 12px;
   background:var(--paper); border:1.5px solid var(--line); border-radius:var(--radius);
@@ -161,11 +163,13 @@ input[type=text]:focus{ outline:2px solid var(--ink); }
 }
 .art-slot .hint{ opacity:.7; }
 .art-banner{ width:100%; aspect-ratio:5/2; margin:6px 0 12px; }
+.art-logo{ width:100%; max-width:480px; aspect-ratio:4/3; margin:6px auto 12px; }
 .art-card{ width:100%; aspect-ratio:3/4; }
 .art-icon{ width:46px; height:46px; font-size:.6rem; flex:0 0 auto; }
 /* imagem de arte (quando o arquivo existe em /art) */
 .art-img{ width:100%; height:100%; object-fit:cover; display:block; }
 .art-banner .art-img{ object-fit:contain; }          /* logo não corta */
+.art-logo .art-img{ object-fit:contain; }            /* GIF do logo não corta */
 .art-slot.has-art{ border:none; background:none; padding:0; }
 .art-slot.has-art .hint{ display:none; }
 
@@ -312,10 +316,10 @@ input[type=text]:focus{ outline:2px solid var(--ink); }
   <section id="screen-home" class="screen active">
     <div class="header" style="margin-top:30px;">
       <!-- ARTE: logotipo/identidade do jogo -->
-      <div class="art-slot art-banner" data-art="logo">
-        <img class="art-img" src="art/logo.png" alt="Pato Secreto"
+      <div class="art-slot art-logo" data-art="logo">
+        <img class="art-img" src="art/logo.gif" alt="Pato Secreto"
              onload="this.closest('.art-slot').classList.add('has-art')" onerror="this.remove()">
-        <span class="hint">ARTE · LOGOTIPO<br>(banner 5:2)</span>
+        <span class="hint">ARTE · LOGO<br>(GIF 480×360)</span>
       </div>
       <h1 class="title">Pato Secreto</h1>
       <p class="sub muted small">Há um pato infiltrado no poder? · um aparelho, a roda toda</p>
@@ -339,10 +343,10 @@ input[type=text]:focus{ outline:2px solid var(--ink); }
   <section id="screen-setup" class="screen">
     <div class="header">
       <!-- ARTE: logotipo/identidade do jogo (substitua o slot abaixo) -->
-      <div class="art-slot art-banner" data-art="logo">
-        <img class="art-img" src="art/logo.png" alt="Pato Secreto"
+      <div class="art-slot art-logo" data-art="logo">
+        <img class="art-img" src="art/logo.gif" alt="Pato Secreto"
              onload="this.closest('.art-slot').classList.add('has-art')" onerror="this.remove()">
-        <span class="hint">ARTE · LOGOTIPO<br>(banner 5:2)</span>
+        <span class="hint">ARTE · LOGO<br>(GIF 480×360)</span>
       </div>
       <h1 class="title">Pato Secreto</h1>
       <p class="sub muted small">Há um pato infiltrado no poder? · um aparelho, a roda toda</p>
@@ -419,7 +423,7 @@ input[type=text]:focus{ outline:2px solid var(--ink); }
       <ul>
         <li><b>Humanos:</b> aprovar 5 pautas humanas <i>ou</i> desmascarar e executar o Pato Secreto.</li>
         <li><b>Patistas:</b> aprovar 6 pautas patistas <i>ou</i> eleger o Pato Secreto como
-        Chanceler depois que a 3ª pauta patista já estiver em vigor.</li>
+        Presidente depois que a 3ª pauta patista já estiver em vigor.</li>
       </ul>
 
       <h3>Os papéis</h3>
@@ -432,25 +436,25 @@ input[type=text]:focus{ outline:2px solid var(--ink); }
 
       <h3>A rodada</h3>
       <ol class="seq">
-        <li><b>Eleição.</b> A presidência passa no sentido horário. O Presidente indica
-        um Chanceler elegível (o último Presidente e o último Chanceler eleitos não podem
-        ser Chanceler; com apenas 5 vivos, só o último Chanceler fica impedido). Todos
+        <li><b>Eleição.</b> O posto de Primeiro Ministro passa no sentido horário. O Primeiro Ministro indica
+        um Presidente elegível (o último Primeiro Ministro e o último Presidente eleitos não podem
+        ser Presidente; com apenas 5 vivos, só o último Presidente fica impedido). Todos
         votam <i>Sim</i> ou <i>Não</i>. Maioria de sim forma o governo; empate ou maioria
         de não rejeita e avança a trilha de eleição. <i>Três rejeições seguidas</i> jogam
         o país no caos: aprova-se a carta do topo, sem poder, e os mandatos são esquecidos.</li>
-        <li><b>Sessão legislativa.</b> O Presidente saca 3 pautas, descarta 1 em sigilo e
-        passa 2 ao Chanceler, que descarta 1 e aprova a outra. Nenhuma comunicação entre
+        <li><b>Sessão legislativa.</b> O Primeiro Ministro saca 3 pautas, descarta 1 em sigilo e
+        passa 2 ao Presidente, que descarta 1 e aprova a outra. Nenhuma comunicação entre
         os dois é permitida, e os descartes nunca são revelados — todos podem mentir sobre
         o que viram.</li>
-        <li><b>Ação executiva.</b> Algumas pautas patistas concedem ao Presidente um poder
+        <li><b>Ação executiva.</b> Algumas pautas patistas concedem ao Primeiro Ministro um poder
         de uso único: investigar a filiação de alguém, convocar eleição especial, espiar as
         3 próximas cartas ou executar um jogador. Após a 5ª pauta patista surge o <b>veto</b>:
-        Presidente e Chanceler podem, juntos, descartar a pauta inteira.</li>
+        Primeiro Ministro e Presidente podem, juntos, descartar a pauta inteira.</li>
       </ol>
 
       <h3>A única regra de sinceridade</h3>
       <p>Pode-se mentir sobre tudo que é secreto. A exceção: quem é o Pato Secreto
-      <b>deve</b> se revelar se for executado ou se for eleito Chanceler em condição de
+      <b>deve</b> se revelar se for executado ou se for eleito Presidente em condição de
       vitória patista.</p>
 
       <h3>Dicas rápidas</h3>
@@ -458,7 +462,7 @@ input[type=text]:focus{ outline:2px solid var(--ink); }
         <li>Todo mundo afirma ser humano — não há vantagem em se expor.</li>
         <li>Humanos ganham desacelerando e investigando; patistas, na pressa e na confusão.</li>
         <li>Os patistas costumam vencer <i>elegendo o Pato Secreto</i>, não acumulando pautas.</li>
-        <li>Quando sai uma pauta patista, só há três culpados: o Presidente, o Chanceler
+        <li>Quando sai uma pauta patista, só há três culpados: o Primeiro Ministro, o Presidente
         ou o próprio baralho.</li>
       </ul>
 
@@ -586,7 +590,7 @@ function nextAliveFrom(i){ let k=i; for(let c=0;c<G.n;c++){ k=(k+1)%G.n; if(aliv
    se o arquivo não existir, mostra-se o placeholder pontilhado.
    =========================================================================== */
 const ART_FILES = {
-  'logo':          'logo',             // art/logo.png            (banner 5:2)
+  'logo':          'logo',             // (logo é GIF estático no HTML: art/logo.gif)
   'role-liberal':  'humano',           // art/humano.png          (carta 3:4)
   'role-fascist':  'patista',          // art/patista.png         (carta 3:4)
   'role-hitler':   'pato-secreto',     // art/pato-secreto.png    (carta 3:4)
@@ -749,7 +753,7 @@ function renderBoard(){
     const s=el('div','slot'+(filled?' filled fas':''), filled?'■':'');
     const num=i+1;
     let pw = num===6 ? 'VITÓRIA PATISTA' : (POWER_LABEL[powerFor(G.n,num)]||'');
-    if(num===3) pw = (pw?pw+' · ':'')+'Pato→Chanc.';
+    if(num===3) pw = (pw?pw+' · ':'')+'Pato→Pres.';
     if(pw) s.appendChild(el('span','pw',pw));
     fasT.appendChild(s);
   }
@@ -770,7 +774,7 @@ function eligibleChancellors(){
     if(!alive(i)) return false;
     if(i===G.presidentIdx) return false;
     if(i===G.lastChancellorIdx) return false;
-    // presidente eleito anterior só fica inelegível se houver >5 vivos
+    // primeiro ministro eleito anterior só fica inelegível se houver >5 vivos
     if(alivePlayers>5 && i===G.lastPresidentIdx) return false;
     return true;
   });
@@ -799,16 +803,16 @@ function phaseNomination(){
     <span class="eyebrow">Eleição · formação de governo</span>
     <hr class="rule">
     <div class="gov">
-      <div class="role-box"><div class="k">Presidente</div><div class="v">${pres.name}</div></div>
-      <div class="role-box"><div class="k">Chanceler</div><div class="v muted">a nomear…</div></div>
+      <div class="role-box"><div class="k">Primeiro Ministro</div><div class="v">${pres.name}</div></div>
+      <div class="role-box"><div class="k">Presidente</div><div class="v muted">a nomear…</div></div>
     </div>
-    <p class="small muted">${pres.name}, indique um(a) chanceler elegível:</p>
+    <p class="small muted">${pres.name}, indique um(a) presidente elegível:</p>
     <div class="pick">${grid}</div>`;
   area.querySelectorAll('.pick .btn:not(.dead)').forEach(b=>{
     b.onclick=()=>{
       const i=+b.dataset.i;
       confirmStep(
-        `<b>${pres.name}</b> indica <b>${G.players[i].name}</b> para Chanceler.<br>A mesa vai votar neste governo.`,
+        `<b>${pres.name}</b> indica <b>${G.players[i].name}</b> para Presidente.<br>A mesa vai votar neste governo.`,
         'Confirmar indicação',
         ()=>{ G.chancellorIdx=i; phaseVote(); },
         phaseNomination
@@ -828,7 +832,7 @@ function renderVoteEntry(){
   $('#phaseArea').innerHTML=`
     <span class="eyebrow">Votação ao vivo</span>
     <hr class="rule">
-    <p class="center">Governo proposto:<br><b>Pres.</b> ${pres} &nbsp;·&nbsp; <b>Chanc.</b> ${ch}</p>
+    <p class="center">Governo proposto:<br><b>P.M.</b> ${pres} &nbsp;·&nbsp; <b>Pres.</b> ${ch}</p>
     <p class="small center muted">Todos votam ao mesmo tempo — de viva voz ou com a mão.
        Uma pessoa conta os votos <b>SIM</b> e confirma o resultado.</p>
     <div class="stepper">
@@ -848,7 +852,7 @@ function resolveVote(passed, jas, total){
   $('#phaseArea').innerHTML=`
     <span class="eyebrow">Resultado da votação</span>
     <hr class="rule">
-    <p class="center"><b>Pres.</b> ${pres} · <b>Chanc.</b> ${ch}</p>
+    <p class="center"><b>P.M.</b> ${pres} · <b>Pres.</b> ${ch}</p>
     <p class="center"><b>${jas}</b> SIM × <b>${total-jas}</b> NÃO —
       <span class="${passed?'win-lib':'win-fas'}">${passed?'GOVERNO ELEITO':'REJEITADO'}</span></p>
     <button class="btn primary" id="voteNext">${passed?'Seguir para a sessão legislativa':'Próxima candidatura'}</button>`;
@@ -861,9 +865,9 @@ function onRejected(){
   renderBoard(); beginRound();
 }
 function onElected(){
-  // checagem: Pato Secreto eleito chanceler após 3 pautas patistas?
+  // checagem: Pato Secreto eleito presidente após 3 pautas patistas?
   if(G.fas>=3 && G.players[G.chancellorIdx].role==='hitler'){
-    return endGame('fascist','O Pato Secreto foi eleito Chanceler após a 3ª pauta patista.');
+    return endGame('fascist','O Pato Secreto foi eleito Presidente após a 3ª pauta patista.');
   }
   G.lastPresidentIdx=G.presidentIdx;
   G.lastChancellorIdx=G.chancellorIdx;
@@ -907,32 +911,32 @@ function polyCard(type, idx, chosen, selectable, text){
 }
 function phaseLegislativePresident(){
   ensureDeck(3);
-  // cada carta sacada vira {type, text} para o texto seguir do Pres. ao Chanc.
+  // cada carta sacada vira {type, text} para o texto seguir do P.M. ao Pres.
   G.drawn=[0,1,2].map(()=>{ const t=G.deck.shift(); return {type:t, text:pickPolicyText(t)}; });
   const pres=G.players[G.presidentIdx].name;
-  doHandoff(pres,'Ver as 3 cartas','O presidente descarta 1 em sigilo.',()=>{
+  doHandoff(pres,'Ver as 3 cartas','O primeiro ministro descarta 1 em sigilo.',()=>{
     renderPresidentHand();
   });
 }
 function renderPresidentHand(){
   const pres=G.players[G.presidentIdx].name;
   $('#phaseArea').innerHTML=`
-    <span class="eyebrow">Sessão legislativa · ${pres} (Pres.)</span>
+    <span class="eyebrow">Sessão legislativa · ${pres} (P.M.)</span>
     <hr class="rule">
-    <p class="small center">Toque na carta que deseja <b>DESCARTAR</b>. As outras 2 vão ao Chanceler.</p>
+    <p class="small center">Toque na carta que deseja <b>DESCARTAR</b>. As outras 2 vão ao Presidente.</p>
     <div class="hand">${G.drawn.map((c,i)=>polyCard(c.type,i,false,true,c.text)).join('')}</div>`;
   $('#phaseArea').querySelectorAll('.poly').forEach(c=>{
     c.onclick=()=>{
       const di=+c.dataset.i;
       const tipo=G.drawn[di].type==='liberal'?'Humana':'Patista';
       confirmStep(
-        `Descartar a <b>Pauta ${tipo}</b>?<br>As outras 2 seguem, em sigilo, para o Chanceler.`,
+        `Descartar a <b>Pauta ${tipo}</b>?<br>As outras 2 seguem, em sigilo, para o Presidente.`,
         'Confirmar descarte',
         ()=>{
           G.discard.push(G.drawn[di].type);
           G.drawn.splice(di,1); // restam 2
           const ch=G.players[G.chancellorIdx].name;
-          doHandoff(ch,'Ver as 2 cartas','O chanceler promulga 1 em sigilo.',renderChancellorHand);
+          doHandoff(ch,'Ver as 2 cartas','O presidente promulga 1 em sigilo.',renderChancellorHand);
         },
         renderPresidentHand
       );
@@ -943,7 +947,7 @@ function renderChancellorHand(){
   const ch=G.players[G.chancellorIdx].name;
   const veto = G.vetoUnlocked;
   $('#phaseArea').innerHTML=`
-    <span class="eyebrow">Sessão legislativa · ${ch} (Chanc.)</span>
+    <span class="eyebrow">Sessão legislativa · ${ch} (Pres.)</span>
     <hr class="rule">
     <p class="small center">Toque na carta que deseja <b>PROMULGAR</b>.</p>
     <div class="hand">${G.drawn.map((c,i)=>polyCard(c.type,i,false,true,c.text)).join('')}</div>
@@ -973,7 +977,7 @@ function requestVeto(){
   $('#phaseArea').innerHTML=`
     <span class="eyebrow">Pedido de veto</span>
     <hr class="rule">
-    <p class="center">O Chanceler deseja vetar a pauta. <b>${pres}</b> (Presidente), você concorda?</p>
+    <p class="center">O Presidente deseja vetar a pauta. <b>${pres}</b> (Primeiro Ministro), você concorda?</p>
     <div class="btn-row">
       <button class="btn" id="vetoYes">Concordo com o veto</button>
       <button class="btn" id="vetoNo">Recuso — promulgar</button>
@@ -993,13 +997,13 @@ function enactPolicy(type){
   if(G.fas>=5) G.vetoUnlocked=true;
   renderBoard();
   if(checkPolicyWin()) return;
-  // poder presidencial?
+  // poder do primeiro-ministro?
   const power = (type==='fascist') ? powerFor(G.n, G.fas) : null;
   $('#phaseArea').innerHTML=`
     <span class="eyebrow">Pauta promulgada</span>
     <hr class="rule">
     <p class="center">Nova pauta <b class="${type==='liberal'?'win-lib':'win-fas'}">${type==='liberal'?'HUMANA':'PATISTA'}</b> em vigor.</p>
-    ${power?`<p class="center small">Poder concedido ao Presidente: <b>${POWER_LABEL[power]}</b>.</p>`:''}
+    ${power?`<p class="center small">Poder concedido ao Primeiro Ministro: <b>${POWER_LABEL[power]}</b>.</p>`:''}
     <button class="btn primary" id="legNext">${power?'Exercer poder':'Encerrar rodada'}</button>`;
   $('#legNext').onclick = power ? ()=>executive(power) : endRound;
 }
@@ -1021,7 +1025,7 @@ function executive(power){
 function powerPeek(){
   ensureDeck(3);
   const pres=G.players[G.presidentIdx].name;
-  doHandoff(pres,'Espiar o topo','Apenas o Presidente vê.',()=>{
+  doHandoff(pres,'Espiar o topo','Apenas o Primeiro Ministro vê.',()=>{
     const top=G.deck.slice(0,3);
     $('#phaseArea').innerHTML=`
       <span class="eyebrow">Espiar pauta · ${pres}</span>
@@ -1049,7 +1053,7 @@ function powerInvestigate(){
         'Confirmar investigação',
         ()=>{
           G.investigated.push(i);
-          doHandoff(pres,'Ver filiação','Resultado só para o Presidente.',()=>{
+          doHandoff(pres,'Ver filiação','Resultado só para o Primeiro Ministro.',()=>{
             const t=G.players[i];
             const party = t.role==='liberal'?'HUMANO':'PATISTA'; // Pato Secreto exibe PATISTA
             const cls   = t.role==='liberal'?'lib':'fas';
@@ -1077,13 +1081,13 @@ function powerSpecial(){
   $('#phaseArea').innerHTML=`
     <span class="eyebrow">Eleição especial · ${pres}</span>
     <hr class="rule">
-    <p class="small center">${pres}, escolha o próximo Presidente (qualquer um, mesmo com mandato vencido):</p>
+    <p class="small center">${pres}, escolha o próximo Primeiro Ministro (qualquer um, mesmo com mandato vencido):</p>
     <div class="pick">${opts.map(i=>`<button class="btn" data-i="${i}">${G.players[i].name}</button>`).join('')}</div>`;
   $('#phaseArea').querySelectorAll('.pick .btn').forEach(b=>{
     b.onclick=()=>{
       const i=+b.dataset.i;
       confirmStep(
-        `Convocar <b>${G.players[i].name}</b> como próximo Presidente?<br>Depois, a presidência volta à rotação normal.`,
+        `Convocar <b>${G.players[i].name}</b> como próximo Primeiro Ministro?<br>Depois, o posto volta à rotação normal.`,
         'Confirmar eleição especial',
         ()=>{
           // a presidência retorna ao jogador à esquerda de quem convocou
